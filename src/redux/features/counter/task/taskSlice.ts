@@ -1,7 +1,7 @@
 import type { RootState } from "@/redux/store";
 import type { iTask } from "@/types";
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { v4 as uuidv4 } from "uuid";
+import { createSlice, nanoid, type PayloadAction } from "@reduxjs/toolkit";
+
 interface InitialState {
   task: iTask[];
   filter: "all" | "high" | "medium" | "low";
@@ -20,26 +20,25 @@ const initialState: InitialState = {
       id: "ewrwerwesdf",
       title: "Create Github Repo",
       description: "Create Home page",
-      duaDate: "2025-12",
+      dueDate: "2025-12",
       isCompleted: false,
       priority: "Low",
     },
   ],
   filter: "all",
 };
+type DraftTask=Pick<iTask,"title"|"description"|"dueDate"|"priority">;
 
+const createTask =(taskData:DraftTask):iTask=>{
+    return {id:nanoid(),isCompleted:false,...taskData};
+} 
 const taskSlice = createSlice({
   name: "task",
   initialState,
   reducers: {
     addTask: (state, action: PayloadAction<iTask>) => {
-      const id = uuidv4();
-      const taskTable = {
-        ...action.payload,
-        id,
-        isCompleted: false,
-      };
-      state.task.push(taskTable);
+    const taskData=createTask(action.payload)
+      state.task.push(taskData);
     },
   },
 });
