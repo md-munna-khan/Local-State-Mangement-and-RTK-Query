@@ -9,36 +9,38 @@ interface InitialState {
 const initialState: InitialState = {
   task: [
     {
-      id: "ewrwerwe",
-      title: "Initialize frontend",
-      description: "Create Home page",
-      duaDate: "2025-12",
+      id: "abc123",
+      title: "Learn React",
+      description: "Finish React hooks section",
+      dueDate: new Date("2025-07-01"),
       isCompleted: false,
       priority: "High",
-    },
-    {
-      id: "ewrwerwesdf",
-      title: "Create Github Repo",
-      description: "Create Home page",
-      dueDate: "2025-12",
-      isCompleted: false,
-      priority: "Low",
     },
   ],
   filter: "all",
 };
-type DraftTask=Pick<iTask,"title"|"description"|"dueDate"|"priority">;
+type DraftTask = Pick<iTask, "title" | "description" | "dueDate" | "priority">;
 
-const createTask =(taskData:DraftTask):iTask=>{
-    return {id:nanoid(),isCompleted:false,...taskData};
-} 
+const createTask = (taskData: DraftTask): iTask => {
+  return { id: nanoid(), isCompleted: false, ...taskData };
+};
 const taskSlice = createSlice({
   name: "task",
   initialState,
   reducers: {
     addTask: (state, action: PayloadAction<iTask>) => {
-    const taskData=createTask(action.payload)
+      const taskData = createTask(action.payload);
       state.task.push(taskData);
+    },
+    toggleCompleteState: (state, action: PayloadAction<string>) => {
+      state.task.forEach((task) => {
+        task.id === action.payload
+          ? (task.isCompleted = !task.isCompleted)
+          : task;
+      });
+    },
+    deleteTask: (state, action: PayloadAction<string>) => {
+      state.task = state.task.filter((task) => task.id !== action.payload);
     },
   },
 });
@@ -49,5 +51,5 @@ export const selectTasks = (state: RootState) => {
 export const selectFilter = (state: RootState) => {
   return state.todo.filter;
 };
-export const { addTask } = taskSlice.actions;
+export const { addTask, toggleCompleteState,deleteTask } = taskSlice.actions;
 export default taskSlice.reducer;
