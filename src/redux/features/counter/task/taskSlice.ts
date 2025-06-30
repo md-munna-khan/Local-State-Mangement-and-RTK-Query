@@ -14,7 +14,7 @@ const initialState: InitialState = {
       description: "Finish React hooks section",
       dueDate: new Date("2025-07-01"),
       isCompleted: false,
-      priority: "High",
+      priority: "high",
     },
   ],
   filter: "all",
@@ -42,14 +42,30 @@ const taskSlice = createSlice({
     deleteTask: (state, action: PayloadAction<string>) => {
       state.task = state.task.filter((task) => task.id !== action.payload);
     },
+    updateFilter: (
+      state,
+      action: PayloadAction<"all" | "high" | "medium" | "low">
+    ) => {
+      state.filter = action.payload;
+    },
   },
 });
 
 export const selectTasks = (state: RootState) => {
-  return state.todo.task;
+  const filter = state.todo.filter;
+  if (filter === "low") {
+    return state.todo.task.filter((task) => task.priority === "low");
+  } else if (filter === "medium") {
+    return state.todo.task.filter((task) => task.priority === "medium");
+  } else if (filter === "high") {
+    return state.todo.task.filter((task) => task.priority === "high");
+  } else {
+    return state.todo.task;
+  }
 };
 export const selectFilter = (state: RootState) => {
   return state.todo.filter;
 };
-export const { addTask, toggleCompleteState,deleteTask } = taskSlice.actions;
+export const { addTask, toggleCompleteState, deleteTask, updateFilter } =
+  taskSlice.actions;
 export default taskSlice.reducer;

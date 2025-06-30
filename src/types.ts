@@ -4,5 +4,5 @@ export interface iTask{
         description:string,
         dueDate:Date,
         isCompleted:boolean,
-        priority:"High"|"Medium"|"Low"
+        priority:"high"|"medium"|"low"
 }
