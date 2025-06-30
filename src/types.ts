@@ -2,7 +2,12 @@ export interface iTask{
     id:string,
         title:string,
         description:string,
-        dueDate:string,
+        dueDate:Date,
         isCompleted:boolean,
-        priority:"High"|"Medium"|"Low"
+        priority:"high"|"medium"|"low",
+        AssignedTo:string|null
+}
+export interface IUser{
+    id:string,
+      name:string
 }
