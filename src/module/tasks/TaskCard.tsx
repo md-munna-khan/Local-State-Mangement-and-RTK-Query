@@ -2,7 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { deleteTask, toggleCompleteState } from "@/redux/features/counter/task/taskSlice";
-import { useAppDispatch } from "@/redux/hook";
+import { selectUser } from "@/redux/features/counter/task/userSlice";
+import { useAppDispatch, useAppSelector } from "@/redux/hook";
 import type { iTask } from "@/types";
 
 
@@ -12,7 +13,10 @@ interface IProps {
     task: iTask
 };
 export default function TaskCard({ task }: IProps) {
-    const dispatch = useAppDispatch()
+   const dispatch = useAppDispatch()
+    const users =useAppSelector(selectUser)
+    const assignedTo =users.find(user=>user.id === task.AssignedTo)
+   
     return (
         <div className="border px-5 py-3 rounded-md container ">
             <div className="flex justify-between items-center">
@@ -26,6 +30,8 @@ export default function TaskCard({ task }: IProps) {
 
                     </div>
                     <h1 className={cn({"line-through":task.isCompleted})}>{task.title}</h1>
+                    <h1 >{assignedTo? assignedTo.name :"no one"}</h1>
+                  
                 </div>
                 <div className="flex gap-3 items-center">
                     <Button onClick={()=>dispatch(deleteTask(task.id))} variant="link" className="p-0 text-red-500">

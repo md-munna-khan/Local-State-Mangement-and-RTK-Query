@@ -15,11 +15,12 @@ const initialState: InitialState = {
       dueDate: new Date("2025-07-01"),
       isCompleted: false,
       priority: "high",
+      AssignedTo:"munna"
     },
   ],
   filter: "all",
 };
-type DraftTask = Pick<iTask, "title" | "description" | "dueDate" | "priority">;
+type DraftTask = Pick<iTask, "title" | "description" | "dueDate" | "priority"|"AssignedTo">;
 
 const createTask = (taskData: DraftTask): iTask => {
   return { id: nanoid(), isCompleted: false, ...taskData };
@@ -32,13 +33,14 @@ const taskSlice = createSlice({
       const taskData = createTask(action.payload);
       state.task.push(taskData);
     },
-    toggleCompleteState: (state, action: PayloadAction<string>) => {
-      state.task.forEach((task) => {
-        task.id === action.payload
-          ? (task.isCompleted = !task.isCompleted)
-          : task;
-      });
-    },
+ toggleCompleteState: (state, action: PayloadAction<string>) => {
+  state.task.forEach((task) => {
+    if (task.id === action.payload) {
+      task.isCompleted = !task.isCompleted;
+    }
+  });
+},
+
     deleteTask: (state, action: PayloadAction<string>) => {
       state.task = state.task.filter((task) => task.id !== action.payload);
     },

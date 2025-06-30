@@ -641,3 +641,219 @@ export default taskSlice.reducer
 
 
 ```
+
+## 23-6 Assigning users to a task
+- sees related To User. and also see code of taskCard for watching assigning user related codes. 
+- store.ts 
+
+```ts 
+import { configureStore } from '@reduxjs/toolkit'
+import counterReducer from "./features/counter/counterSlice"
+
+import taskReducer from "./features/task/taskSlice"
+import userReducer from "./features/user/userSlice"
+
+export const store = configureStore({
+    reducer: {
+        counter: counterReducer,
+        todo: taskReducer,
+        user: userReducer
+    }
+})
+
+export type RootState = ReturnType<typeof store.getState>
+
+export type AppDispatch = typeof store.dispatch
+
+```
+- types.ts 
+
+```ts 
+export interface ITask {
+    id: string
+    title: string
+    description: string
+    dueDate: string
+    isCompleted: boolean
+    priority: "High" | "Medium" | "Low",
+    assignedTo: string | null
+}
+
+export interface IUser {
+    id: string
+    name: string
+}
+```
+- userSlice.ts
+
+```ts
+
+import type { RootState } from "@/redux/store";
+import type { IUser } from "@/types";
+import { createSlice, nanoid, type PayloadAction } from "@reduxjs/toolkit";
+interface InitialState {
+    users: IUser[]
+}
+const initialState: InitialState = {
+    users: [
+        {
+            id: "QBpNSd38i-t1s_IcdhhX9",
+            name: "sazid"
+        },
+        {
+            id: "QBpNSd38i-t1s_IcdhhXdfd",
+            name: "shakil"
+        }
+    ]
+}
+type DraftUser = Pick<IUser, "name">
+const createUser = (userData: DraftUser): IUser => {
+    return { id: nanoid(), ...userData }
+}
+
+const userSlice = createSlice({
+    name: "user",
+    initialState: initialState,
+    reducers: {
+        addUser: (state, action: PayloadAction<IUser>) => {
+            const userData = createUser(action.payload);
+            // console.log(userData)
+            state.users.push(userData)
+        },
+        removeUser: (state, action: PayloadAction<string>) => {
+            state.users = state.users.filter((user) => user.id != action.payload)
+        }
+    }
+})
+
+export const selectUser = (state: RootState) => {
+    return state.user.users
+}
+
+export const { addUser, removeUser } = userSlice.actions
+
+export default userSlice.reducer
+```
+
+- AddUserModal.tsx
+
+```tsx
+import { Button } from "@/components/ui/button";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+
+import { addUser } from "@/redux/features/counter/task/userSlice";
+
+import { useAppDispatch } from "@/redux/hook";
+import type { IUser } from "@/types";
+
+import { useForm, type FieldValues, type SubmitHandler } from "react-hook-form";
+
+export default function AddUserModal() {
+  const dispatch = useAppDispatch();
+  const form = useForm();
+
+  const onSubmit: SubmitHandler<FieldValues> = (data) => {
+    dispatch(addUser(data as IUser));
+  };
+
+  return (
+    <Dialog>
+      <form>
+        <DialogTrigger asChild>
+          <Button>Add User</Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogDescription className="sr-only">
+            Fill up This user Form to add user
+          </DialogDescription>
+          {/* sr-only means only the screen reader can read but this will not be visible. */}
+          <DialogHeader>
+            <DialogTitle>Add Task</DialogTitle>
+          </DialogHeader>
+          {/* changed the form */}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} value={field.value || ""} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <DialogFooter className="mt-4 ">
+                <Button type="submit" className="w-full ">
+                  Save changes
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </form>
+    </Dialog>
+  );
+}
+
+```
+
+- UserCard.tsx
+
+```tsx 
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+
+import { deleteUser } from "@/redux/features/counter/task/userSlice";
+import { useAppDispatch } from "@/redux/hook";
+import type { IUser } from "@/types";
+
+import { Trash2 } from "lucide-react";
+
+interface IProps {
+  user: IUser;
+}
+// export default function TaskCard({ task }: IProps) {
+export default function UserCard({ user }: IProps) {
+  const dispatch = useAppDispatch();
+  return (
+    <div className="border px-5 py-3 rounded-md container ">
+      <div className="flex justify-between items-center">
+        <div className="flex gap-3 items-center">
+          <h1>{user.name}</h1>
+          <Button
+            onClick={() => dispatch(deleteUser(user.id))}
+            variant="link"
+            className="p-0 text-red-500"
+          >  
+            <Trash2 /> 
+          </Button>
+          <Button variant="link" className="p-0 text-red-500"></Button>
+          <Checkbox />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+```
