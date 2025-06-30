@@ -1111,3 +1111,49 @@ export default taskSlice.reducer
 
 
 ```
+## 23-8 Local State vs Server State
+- RTK and Slice has major difference 
+
+
+1. **slice :** we are creating createSlice . this for local state
+2. **RTK :** Base API => endpoints => server state. When we update a parameter it is directly gets connected to server and updates there. There is no connection with store. When server state is handled the data is stored directly inside db. For sysncing with server state we use RTK Query. 
+
+- `RTK Query` handles the `data fetching` and the `caching`.
+- The shareable things are done using RTK as it needs to be stored inside the database. 
+- Mostly we will use RTK Query.  
+
+## 23-9 creating API for RTK Query
+- As we are integrating the server lets clear the codebase. 
+
+[RTK-QUERY SETUP](https://redux-toolkit.js.org/rtk-query/overview)
+
+- crud operations works are defined in two types in redux
+  1. **Query :** get
+  2. **Mutation :** update delete, post, put, patch
+
+- src - redux - api - baseApi 
+
+
+```ts 
+// Importing the necessary functions from Redux Toolkit Query
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+
+// Creating a base API instance using createApi
+const baseApi = createApi({
+    // Unique key for the API reducer in the Redux store
+    reducerPath: "baseApi",
+
+    // Defines the base URL for all API calls
+    baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:5000/api" }),
+
+    // Define all API endpoints here
+    endpoints: (builder) => ({
+        // Define a "getTask" endpoint for fetching tasks
+        getTask: builder.query({
+            // This query will hit the `/tasks` route (full URL: http://localhost:5000/api/tasks)
+            query: () => "/tasks"
+        })
+    })
+})
+
+```
