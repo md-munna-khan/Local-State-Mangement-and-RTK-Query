@@ -1193,3 +1193,172 @@ const baseApi = createApi({
 })
 
 ```
+## 23-10 Connecting the baseApi
+
+```ts 
+// made an automatic hook 
+export const { useGetTaskQuery } = baseApi
+```
+- This aromatically creates a `useGetTaskQuery` hook to export \
+
+
+```ts 
+// Importing the necessary functions from Redux Toolkit Query
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+
+// Creating a base API instance using createApi
+export const baseApi = createApi({
+    // Unique key for the API reducer in the Redux store
+    reducerPath: "baseApi",
+
+    // Defines the base URL for all API calls
+    baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:5000/api" }),
+
+    // Define all API endpoints here
+    endpoints: (builder) => ({
+        // Define a "getTask" endpoint for fetching tasks
+        getTask: builder.query({
+            // This query will hit the `/tasks` route (full URL: http://localhost:5000/api/tasks)
+            query: () => "/tasks"
+        })
+    })
+})
+
+// made an automatic hook 
+export const { useGetTaskQuery } = baseApi
+```
+
+- When we work with RTK Query he will redux will make and give use some middlewares. 
+- Data Fetching works will be handled by middlewares. 
+
+- Lets connect the store now 
+
+
+```ts 
+
+import { configureStore } from "@reduxjs/toolkit"
+
+// Import the baseApi which contains our API slice (created using createApi)
+import { baseApi } from "./api/baseApi"
+
+// Creating the Redux store
+export const store = configureStore({
+    reducer: {
+        // Adds the API slice reducer to the Redux store under the key "baseApi"
+        // This manages the cache, loading, error, and data state for API requests
+        [baseApi.reducerPath]: baseApi.reducer
+        // Equivalent to: baseApi: baseApi.reducer
+        // baseApi.reducerPath returns "baseApi" by default
+    },
+
+    // Enhancing the middleware pipeline with RTK Query's middleware
+    // This enables caching, automated refetching, polling, etc.
+    middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware().concat(baseApi.middleware)
+})
+
+
+export type RootState = ReturnType<typeof store.getState>
+
+export type AppDispatch = typeof store.dispatch
+
+```
+
+- By Using this we will get data 
+
+```tsx
+    const { data, isLoading, isError } = useGetTaskQuery(undefined)
+
+    console.log({ data, isLoading, isError })
+```
+
+- Task.tsx
+
+```ts 
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { AddTaskModal } from "@/module/AddTaskModal"
+import TaskCard from "@/module/TaskCard"
+import { useGetTaskQuery } from "@/redux/api/baseApi"
+import type { ITask } from "@/types"
+
+
+
+export default function Task() {
+
+    const { data, isLoading, isError } = useGetTaskQuery(undefined)
+
+    console.log({ data, isLoading, isError })
+
+    if (isLoading) {
+        return <p>Loading ........</p>
+    }
+    return (
+        <div className="mx-auto max-w-7xl px-5 mt-20">
+            <div className="flex justify-end items-center">
+                <h1 className="mr-auto">Tasks</h1>
+                <Tabs defaultValue="all" className="w-[400px]">
+                    <TabsList>
+                        <TabsTrigger value="all">All</TabsTrigger>
+                        <TabsTrigger value="low">Low</TabsTrigger>
+                        <TabsTrigger value="medium">Medium</TabsTrigger>
+                        <TabsTrigger value="high">High</TabsTrigger>
+                    </TabsList>
+                </Tabs>
+                <AddTaskModal />
+            </div>
+
+            <div className="space-y-5 mt-5">
+                {!isLoading && data.tasks.map((task: ITask) => (<TaskCard task={task} key={task._id} />))}
+            </div>
+
+        </div>
+    )
+}
+
+```
+
+- TaskCard.tsx 
+
+```tsx 
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
+
+import type { ITask } from "@/types";
+
+import { Trash2 } from "lucide-react";
+
+interface IProps {
+    task: ITask;
+}
+export default function TaskCard({ task }: IProps) {
+
+
+    return (
+        <div className="border px-5 py-3 rounded-md container ">
+            <div className="flex justify-between items-center">
+                <div className="flex gap-2 items-center">
+                    {/* clsx used here  */}
+                    <div className={cn("size-3 rounded-full", {
+                        "bg-green-500": task.priority === "Low",
+                        "bg-yellow-500": task.priority === "Medium",
+                        "bg-red-600": task.priority === "High"
+                    })}>
+
+                    </div>
+                    <h1 className={cn({ "line-through": task.isCompleted })}>{task.title}</h1>
+                </div>
+                <div className="flex gap-3 items-center">
+                    <Button variant="link" className="p-0 text-red-500">
+                        <Trash2 />
+                    </Button>
+                    <Checkbox checked={task.isCompleted} />
+                </div>
+            </div>
+            <p className="mt-5">Assigned To - </p>
+            <p className="mt-5">{task.description}</p>
+        </div >
+    );
+}
+
+```

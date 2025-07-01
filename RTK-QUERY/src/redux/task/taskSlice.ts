@@ -1,9 +1,8 @@
-
+import Task from "@/pages/Task";
 import type { RootState } from "@/redux/store";
 import type { iTask } from "@/types";
 import { createSlice, nanoid, type PayloadAction } from "@reduxjs/toolkit";
 import { deleteUser } from "./userSlice";
-
 
 interface InitialState {
   task: iTask[];

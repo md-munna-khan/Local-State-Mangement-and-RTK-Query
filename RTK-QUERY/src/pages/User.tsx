@@ -1,33 +1,23 @@
-
-
 import AddUserModal from "@/module/tasks/AddUserModal";
 
-import UserCard from "@/module/tasks/UserCard";
-import {
-  selectFilter,
- 
-} from "@/redux/features/counter/task/taskSlice";
-import { selectUser } from "@/redux/features/counter/task/userSlice";
-import { useAppSelector } from "@/redux/hook";
+
+
+
 
 
 export default function User() {
-  const user = useAppSelector(selectUser);
-  const filter = useAppSelector(selectFilter);
-  // const dispatch = useDispatch()
-  console.log(user);
-  console.log(filter);
-  return (
-    <div>
-      <h1>Tasks</h1>
-      <div className="flex justify-center p-2">
-     
-        <AddUserModal/>
-      </div>
-      {user.map((user) => (
-        <UserCard user={user} key={user.id} />
-      ))}
-    </div>
-  );
-}
 
+    return (
+        <div className="mx-auto max-w-7xl px-5 mt-20">
+            <div className="flex justify-end items-center">
+                <h1 className="mr-auto">Users</h1>
+                <AddUserModal />
+            </div>
+
+            <div className="flex justify-start items-center gap-4">
+
+            </div>
+
+        </div>
+    )
+}

@@ -1,22 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { deleteTask, toggleCompleteState } from "@/redux/features/counter/task/taskSlice";
-import { selectUser } from "@/redux/features/counter/task/userSlice";
-import { useAppDispatch, useAppSelector } from "@/redux/hook";
-import type { iTask } from "@/types";
 
+import type { ITask } from "@/types";
 
 import { Trash2 } from "lucide-react";
 
 interface IProps {
-    task: iTask
-};
+    task: ITask;
+}
 export default function TaskCard({ task }: IProps) {
-   const dispatch = useAppDispatch()
-    const users =useAppSelector(selectUser)
-    const assignedTo =users.find(user=>user.id === task.AssignedTo)
-   
+
+
     return (
         <div className="border px-5 py-3 rounded-md container ">
             <div className="flex justify-between items-center">
@@ -29,23 +24,17 @@ export default function TaskCard({ task }: IProps) {
                     })}>
 
                     </div>
-                    <h1 className={cn({"line-through":task.isCompleted})}>{task.title}</h1>
-                    <h1 >{assignedTo? assignedTo.name :"no one"}</h1>
-                  
+                    <h1 className={cn({ "line-through": task.isCompleted })}>{task.title}</h1>
                 </div>
                 <div className="flex gap-3 items-center">
-                    <Button onClick={()=>dispatch(deleteTask(task.id))} variant="link" className="p-0 text-red-500">
-                        <Trash2  />
+                    <Button variant="link" className="p-0 text-red-500">
+                        <Trash2 />
                     </Button>
-                    <Button  variant="link" className="p-0 text-red-500">
-                     
-                    </Button>
-                    <Checkbox
-                    checked={task.isCompleted}
-                    onClick={()=>dispatch(toggleCompleteState(task.id))} />
+                    <Checkbox checked={task.isCompleted} />
                 </div>
             </div>
+            <p className="mt-5">Assigned To - </p>
             <p className="mt-5">{task.description}</p>
-        </div>
+        </div >
     );
 }
