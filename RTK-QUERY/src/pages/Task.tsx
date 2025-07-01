@@ -4,7 +4,8 @@ import { AddTaskModal } from "@/module/tasks/AddTaskModal"
 import TaskCard from "@/module/tasks/TaskCard"
 
 import { useGetTaskQuery } from "@/redux/api/baseApi"
-import type { iTask } from "@/types"
+import type { ITask } from "@/types"
+
 
 
 
@@ -12,6 +13,12 @@ import type { iTask } from "@/types"
 export default function Task() {
 
     const { data, isLoading, isError } = useGetTaskQuery(undefined)
+    // const { data, isLoading, isError } = useGetTaskQuery(undefined,{
+    //     pollingInterval:30000,
+    //     refetchOnFocus:true,
+    //     refetchOnMountOrArgChange:true,
+    //     refetchOnReconnect:true
+    // })
 
     console.log({ data, isLoading, isError })
 
@@ -34,7 +41,7 @@ export default function Task() {
                  </div>
 
             <div className="space-y-5 mt-5">
-                {!isLoading && data.tasks.map((task: iTask) => (<TaskCard task={task} key={task.id} />))}
+                {!isLoading && data.tasks.map((task: ITask) => (<TaskCard task={task} key={task.id} />))}
             </div>
 
         </div>

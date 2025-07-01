@@ -1612,3 +1612,126 @@ export function AddTaskModal() {
 }
 
 ```
+## 23-12 Caching in redux
+
+- Fo automatically refetching the tags we need to use cache tags 
+
+[cache tags](https://redux-toolkit.js.org/rtk-query/usage/automated-refetching)
+
+- cache tags gives us different names. based on the names we can validate and invalidate. I mean clear the cache and refetch 
+
+```ts 
+// Importing the necessary functions from Redux Toolkit Query
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+
+// Creating a base API instance using createApi
+export const baseApi = createApi({
+    // Unique key for the API reducer in the Redux store
+    reducerPath: "baseApi",
+
+    // Defines the base URL for all API calls
+    baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:5000/api" }),
+
+    // 🔖 Declaring tag types that can be used to manage cache
+    // These tags help RTK Query know when to refetch or invalidate cached data
+
+    tagTypes: ["task"],
+    // Define all API endpoints here
+    endpoints: (builder) => ({
+        // Define a "getTask" endpoint for fetching tasks
+        getTask: builder.query({
+            // This query will hit the `/tasks` route (full URL: http://localhost:5000/api/tasks)
+            query: () => "/tasks",
+            // ✅ This tells RTK Query that the result of this query provides the "task" tag
+            // So, if any mutation invalidates this tag, this query will be refetched automatically
+            providesTags: ["task"],
+        }),
+        createTask: builder.mutation({
+            query: (taskData) => ({
+                url: "/tasks",          // Endpoint to which the request will be sent
+                method: "POST",         // HTTP method used for the request
+                body: taskData          // Request payload (sent in the body of the POST)
+            }),
+            // ❌ This tells RTK Query to invalidate the "task" tag after this mutation
+            // As a result, it will automatically refetch any queries that provide the "task" tag (like getTask)
+            invalidatesTags: ["task"]
+        })
+    })
+})
+
+// made an automatic hook 
+export const { useGetTaskQuery, useCreateTaskMutation } = baseApi
+
+
+```
+
+![alt text](image.png)
+
+
+- We can deal with caching using 
+  1. **polingInterval :** Automatically refetches the query data at regular intervals (in milliseconds), keeping the data fresh even if the user doesn't interact.
+  2. **refetchOnFocus :** Refetches the query data when the window/tab regains focus
+  3. **refetchOnMountOrArgChange :** Refetches the data when the component mounts or when query arguments change.
+
+```tsx 
+    const { data, isLoading, isError } = useGetTaskQuery(undefined,
+        {
+            pollingInterval: 3000,
+            refetchOnFocus : true,
+            refetchOnMountOrArgChange : true
+        }
+    )
+```
+
+- Task.tsx 
+
+```tsx 
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { AddTaskModal } from "@/module/AddTaskModal"
+import TaskCard from "@/module/TaskCard"
+import { useGetTaskQuery } from "@/redux/api/baseApi"
+import type { ITask } from "@/types"
+
+
+
+export default function Task() {
+
+    const { data, isLoading, isError } = useGetTaskQuery(undefined,
+        {
+            pollingInterval: 3000,
+            refetchOnFocus: true,
+            refetchOnMountOrArgChange: true
+        }
+    )
+
+    console.log({ data, isLoading, isError })
+
+    console.log(data)
+
+    if (isLoading) {
+        return <p>Loading ........</p>
+    }
+    return (
+        <div className="mx-auto max-w-7xl px-5 mt-20">
+            <div className="flex justify-end items-center">
+                <h1 className="mr-auto">Tasks</h1>
+                <Tabs defaultValue="all" className="w-[400px]">
+                    <TabsList>
+                        <TabsTrigger value="all">All</TabsTrigger>
+                        <TabsTrigger value="low">Low</TabsTrigger>
+                        <TabsTrigger value="medium">Medium</TabsTrigger>
+                        <TabsTrigger value="high">High</TabsTrigger>
+                    </TabsList>
+                </Tabs>
+                <AddTaskModal />
+            </div>
+
+            <div className="space-y-5 mt-5">
+                {!isLoading && data.tasks.map((task: ITask) => (<TaskCard task={task} key={task._id} />))}
+            </div>
+
+        </div>
+    )
+}
+
+```
